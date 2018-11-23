@@ -14,6 +14,7 @@ namespace CarForm.Mapping
         {
             CreateMap<CarMark, CarMarkResources>();
             CreateMap<CarModel, CarModelResources>();
+            CreateMap<Feature, FeatureResources>();
         }
     }
 }

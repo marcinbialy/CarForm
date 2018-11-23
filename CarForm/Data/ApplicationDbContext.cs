@@ -15,5 +15,6 @@ namespace CarForm.Data
         }
 
         public DbSet<CarMark> CarMarks { get; set; }
+        public DbSet<Feature> Features { get; set; }
     }
 }
