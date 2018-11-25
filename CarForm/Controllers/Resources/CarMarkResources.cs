@@ -6,15 +6,13 @@ using System.Threading.Tasks;
 
 namespace CarForm.Controllers.Resources
 {
-    public class CarMarkResources
+    public class CarMarkResources : KeyValuePairResources
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public ICollection<CarModelResources> CarModels { get; set; }
+        public ICollection<KeyValuePairResources> CarModels { get; set; }
 
         public CarMarkResources()
         {
-            CarModels = new Collection<CarModelResources>();
+            CarModels = new Collection<KeyValuePairResources>();
         }
     }
 }

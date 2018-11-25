@@ -22,10 +22,10 @@ namespace CarForm.Controllers
         }
 
         [HttpGet("/api/features")]
-        public IEnumerable<FeatureResources> Index()
+        public IEnumerable<KeyValuePairResources> Index()
         {
             var features = _context.Features.ToList();
-            return mapper.Map<List<Feature>, List<FeatureResources>>(features);
+            return mapper.Map<List<Feature>, List<KeyValuePairResources>>(features);
         }
     }
 }

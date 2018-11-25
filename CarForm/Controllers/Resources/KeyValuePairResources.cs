@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CarForm.Controllers.Resources
 {
-    public class FeatureResources
+    public class KeyValuePairResources
     {
         public int Id { get; set; }
         public string Name { get; set; }

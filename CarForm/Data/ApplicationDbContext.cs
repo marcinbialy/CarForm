@@ -26,5 +26,7 @@ namespace CarForm.Data
             modelBuilder.Entity<VehicleFeature>().HasKey(vf => new { vf.VehicleId, vf.FeatureId });
         }
 
+        public DbSet<CarForm.Models.VehicleFeature> VehicleFeature { get; set; }
+
     }
 }

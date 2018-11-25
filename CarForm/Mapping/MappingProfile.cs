@@ -14,14 +14,20 @@ namespace CarForm.Mapping
         {
             //Domain to API Resource
             CreateMap<CarMark, CarMarkResources>();
-            CreateMap<CarModel, CarModelResources>();
-            CreateMap<Feature, FeatureResources>();
-            CreateMap<Vehicle, VehicleResources>()
+            CreateMap<CarMark, KeyValuePairResources>();
+            CreateMap<CarModel, KeyValuePairResources>();
+            CreateMap<Feature, KeyValuePairResources>();
+            CreateMap<Vehicle, SaveVehicleResources>()
                 .ForMember(vr => vr.Contact, opt => opt.MapFrom(v => new ContactResources { Name = v.ContactName, Email = v.Email, Phone = v.ContactPhone }))
                 .ForMember(vr => vr.Features, opt => opt.MapFrom(v => v.Features.Select(vf => vf.FeatureId)));
+            CreateMap<Vehicle, VehicleResources>()
+                .ForMember(vr => vr.CarMark, opt => opt.MapFrom(v => v.CarModel.CarMark))
+                .ForMember(vr => vr.Contact, opt => opt.MapFrom(v => new ContactResources { Name = v.ContactName, Email = v.Email, Phone = v.ContactPhone }))
+                .ForMember(vr => vr.Features, opt => opt.MapFrom(v => v.Features.Select(vf => new KeyValuePairResources { Id = vf.Feature.Id, Name = vf.Feature.Name})));
+
 
             //API Resource to Domain
-            CreateMap<VehicleResources, Vehicle>()
+            CreateMap<SaveVehicleResources, Vehicle>()
                 .ForMember(v => v.Id, opt => opt.Ignore())
                 .ForMember(v => v.ContactName, opt => opt.MapFrom(vr => vr.Contact.Name))
                 .ForMember(v => v.Email, opt => opt.MapFrom(vr => vr.Contact.Email))

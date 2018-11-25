@@ -11,60 +11,59 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarForm.Controllers
 {
-    [Route("/api/vehicles")]
+   [Route("/api/vehicles")]
     public class VehiclesController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IMapper mapper;
+        private readonly IVehicleRepository repository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public VehiclesController(ApplicationDbContext context, IMapper mapper)
+        public VehiclesController(IMapper mapper, IVehicleRepository repository, IUnitOfWork unitOfWork)
         {
-            _context = context;
             this.mapper = mapper;
+            this.repository = repository;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] VehicleResources vehicleResources)
+        public async Task<IActionResult> Create([FromBody] SaveVehicleResources vehicleResources)
         {
+            // check model state
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var model = await _context.CarModels.FindAsync(vehicleResources.CarModelId);
-            if (model == null)
-            {
-                ModelState.AddModelError("CarModelId", "Invalid CarModelId");
-                return BadRequest(ModelState);
-            }
-             
-
-            var vehicle = mapper.Map<VehicleResources, Vehicle>(vehicleResources);
+            var vehicle = mapper.Map<SaveVehicleResources, Vehicle>(vehicleResources);
             vehicle.LastUpdate = DateTime.Now;
 
-            _context.Vehicles.Add(vehicle);
-            await _context.SaveChangesAsync();
+            repository.Add(vehicle);
+            await unitOfWork.CompleteAsync();
 
-            var result = mapper.Map<Vehicle, VehicleFeature>(vehicle);
+            // go to method GetVehicle in Data/VehicleRepository
+            vehicle = await repository.GetVehicle(vehicle.Id);
+
+            var result = mapper.Map<Vehicle, VehicleResources>(vehicle);
 
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] VehicleResources vehicleResources)
+        public async Task<IActionResult> Update(int id, [FromBody] SaveVehicleResources vehicleResources)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var vehicle = await _context.Vehicles.Include(v => v.Features).SingleOrDefaultAsync(v => v.Id == id);
+            var vehicle = await repository.GetVehicle(id);
 
             if (vehicle == null)
                 return NotFound();
 
-            mapper.Map<VehicleResources, Vehicle>(vehicleResources, vehicle);
+            mapper.Map<SaveVehicleResources, Vehicle>(vehicleResources, vehicle);
             vehicle.LastUpdate = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+            await unitOfWork.CompleteAsync();
 
-            var result = mapper.Map<Vehicle, VehicleFeature>(vehicle);
+            vehicle = await repository.GetVehicle(vehicle.Id);
+            var result = mapper.Map<Vehicle, VehicleResources>(vehicle);
 
             return Ok(result);
         }
@@ -72,13 +71,13 @@ namespace CarForm.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var vehicle = await _context.Vehicles.FindAsync(id);
+            var vehicle = await repository.FindVehicle(id);
 
             if (vehicle == null)
                 return NotFound();
 
-            _context.Remove(vehicle);
-            await _context.SaveChangesAsync();
+            repository.Remove(vehicle);
+            await unitOfWork.CompleteAsync();
 
             return Ok(id);
         }
@@ -86,7 +85,7 @@ namespace CarForm.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSingle(int id)
         {
-            var vehicle = await _context.Vehicles.Include(v => v.Features).SingleOrDefaultAsync(v => v.Id == id);
+            var vehicle = await repository.GetVehicle(id);
 
             if (vehicle == null)
                 return NotFound();
